@@ -57,6 +57,8 @@ void CreateCSV (){
 
 //Funcao para inserir uma nova lista
  void LotsInsert (){
+    //Polyana 
+
    //O objetivo dessa função é abrir o arquivo txt, pegar os dados dele e salvar em um arquivo .bin. Precisa se atentar ao formato do nome do arquivo txt. Se ele vier no formato dia_mes_ano.txt, faça uma rotina que verifica somente qual é o mes e qual é o ano para verificar se existe informações já salvas para esse mes. Se existir imprimir a mensagem "Já existem dados para esse mês. Deseja sobrescrever?\n" e chama a funcao validar_opcao(2) exatamente dessa forma.
 
     // Apos finalizacao da insercao imprimir a mensagem "Dados {nome do arquivo} inseridos com sucesso no arquivo dados.bin"
