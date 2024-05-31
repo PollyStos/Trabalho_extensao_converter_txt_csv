@@ -52,12 +52,14 @@ bool ValidaBin(){
 }
 
 void CreateCSV (){
+    //Polly
+    
     //O objetivo dessa função é pegar os dados que chegarem pra ela via parâmetro e criar um CSV.
 }
 
 //Funcao para inserir uma nova lista
  void LotsInsert (){
-    //Polyana 
+    //joao pedro
 
    //O objetivo dessa função é abrir o arquivo txt, pegar os dados dele e salvar em um arquivo .bin. Precisa se atentar ao formato do nome do arquivo txt. Se ele vier no formato dia_mes_ano.txt, faça uma rotina que verifica somente qual é o mes e qual é o ano para verificar se existe informações já salvas para esse mes. Se existir imprimir a mensagem "Já existem dados para esse mês. Deseja sobrescrever?\n" e chama a funcao validar_opcao(2) exatamente dessa forma.
 
