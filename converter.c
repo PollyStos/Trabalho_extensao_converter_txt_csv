@@ -97,6 +97,7 @@ void LotsList(){
  //O objetivo dessa funcao e pegar os dados do arquivo dados.bin e listar na tela e depois chamar a funcao que ira criar um arquivo CSV com esses dados. Passe os dados do arquivo bin como parâmetro para a função que irá criar o CSV. O nome desse arquivo deve ser todos_registros
 
     CreateCSV();
+    // Leticia
 // no final imprimir uma mensagem contendo a quantidade de registros que foram criados
 }
 
