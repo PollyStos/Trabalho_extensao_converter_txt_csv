@@ -40,7 +40,7 @@ int validarOpcao(int num) {
 
         if (fgets(input, sizeof(input), stdin) != NULL) {
             // Remove o caractere de nova linha, se presente
-            input[strcspn(input, "\n")] = 0;
+            input[strcspn(input, "\n")] = '\0';
 
             // Verifica se toda a entrada é composta por dígitos
             valid = 1;
@@ -98,30 +98,33 @@ void lerArquivo(const char* nomeArquivo,const char* type, size_t* tamanho,const 
     return;
 }
 
-<<<<<<< HEAD
 void createCSV (const char** dados){
     printf("create CSV\n\n");
     //Leticia 
-=======
-void CreateCSV (){
-    //Polly
-    
->>>>>>> d5b251b4015d8160d57ce30cf217a472d9a1d25c
     //O objetivo dessa função é pegar os dados que chegarem pra ela via parâmetro e criar um CSV.
 }
 
 //Funcao para inserir uma nova lista
-<<<<<<< HEAD
- void lotsInsert (){
-    printf("Lots Insert\n\n");
-=======
- void LotsInsert (){
-    //joao pedro
->>>>>>> d5b251b4015d8160d57ce30cf217a472d9a1d25c
+ void lotsInsert (){ 
+    char NomeArq[15]; //23_12_2001.txt\0
+    const char* type = "txt";
+    size_t tamanho = 0;
+    const char* dados = NULL;
+
+    printf("Coloque o nome do seu arquivo que deseja abrir:");
+    fgets(NomeArq, sizeof(NomeArq), stdin);
+    NomeArq[strcspn(NomeArq, "\n")] = '\0';
+    printf(NomeArq);
+
+    lerArquivo(NomeArq ,type, &tamanho, &dados);
+    printf(dados);
+    
+
 
    //O objetivo dessa função é abrir o arquivo txt, pegar os dados dele e salvar em um arquivo .bin. Precisa se atentar ao formato do nome do arquivo txt. Se ele vier no formato dia_mes_ano.txt, faça uma rotina que verifica somente qual é o mes e qual é o ano para verificar se existe informações já salvas para esse mes. Se existir imprimir a mensagem "Já existem dados para esse mês. Deseja sobrescrever?\n" e chama a funcao validar_opcao(2) exatamente dessa forma.
 
     // Apos finalizacao da insercao imprimir a mensagem "Dados {nome do arquivo} inseridos com sucesso no arquivo dados.bin"
+    free(dados);
  }
 
  void lotsDelete (){
@@ -155,7 +158,6 @@ void lotsList(){
     size_t tamanho = 0;
     const char* dados = NULL;
 
-<<<<<<< HEAD
  //O objetivo dessa funcao e pegar os dados do arquivo dados.bin e listar na tela e depois chamar a funcao que ira criar um arquivo CSV com esses dados. Passe os dados do arquivo bin como parâmetro para a função que irá criar o CSV. O nome desse arquivo deve ser todos_registros
     lerArquivo(nomeArquivo ,type, &tamanho, &dados);
 
@@ -166,10 +168,6 @@ void lotsList(){
     }
 
     createCSV(&dados);
-=======
-    CreateCSV();
-    // Leticia
->>>>>>> d5b251b4015d8160d57ce30cf217a472d9a1d25c
 // no final imprimir uma mensagem contendo a quantidade de registros que foram criados
     free(dados);
     return;
