@@ -129,7 +129,7 @@ void createCSV (const char** dados){
 
  void lotsDelete (){
     printf("Digite a data que deseja excluir 'mm/aaaa':\n\n");
-
+//gabriel
     //O objetivo dessa função é pegar todos os dados do arquivo dados.bin, criar uma cópia chamada backup.bin e passar para ele todos os dados que NÃO estão contidos no mes informado. Ex: se foi informado 04/2024 então tudo o que não for de abril deve ser salvo no arquivo backup.bin. Após isso, ele deve excluir o arquivo dados.bin e criar um novo com os dados do arquivo backup.bin
 
     // ao final ele deve imprimir uma mensagem informando quantos registros foram apagados.
