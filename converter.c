@@ -1,6 +1,7 @@
 #include <stdio.h>
 #include <string.h>
 #include <stdlib.h>
+#include <time.h>
 
 
 
@@ -30,7 +31,7 @@ void clear(){
     #endif    
 }
 
-// Função para validar se a entrada é um número entre 1 e 5
+// FunÃ§Ã£o para validar se a entrada Ã© um nÃºmero entre 1 e 5
 int validarOpcao(int num) {
     char input[100];
     int numero;
@@ -38,13 +39,13 @@ int validarOpcao(int num) {
 
     while (1) {
         if (num==5) printf("Digite uma opcao: [1-5]: ");
-        if (num==2) printf("Digite 1 para sim e 0 para não.");
+        if (num==2) printf("Digite 1 para sim e 0 para nÃ£o.");
 
         if (fgets(input, sizeof(input), stdin) != NULL) {
             // Remove o caractere de nova linha, se presente
             input[strcspn(input, "\n")] = '\0';
 
-            // Verifica se toda a entrada é composta por dígitos
+            // Verifica se toda a entrada Ã© composta por dÃ­gitos
             valid = 1;
             for (int i = 0; input[i] != '\0'; i++) {
                 if (!isdigit(input[i])) {
@@ -53,7 +54,7 @@ int validarOpcao(int num) {
                 }
             }
             
-            // Converte para inteiro e verifica se está no intervalo desejado
+            // Converte para inteiro e verifica se estÃ¡ no intervalo desejado
             if (valid) {
                 numero = atoi(input);
                 if (numero >= 1 && numero <= num) {
@@ -69,10 +70,10 @@ int validarOpcao(int num) {
 
 void lerArquivo(const char* nomeArquivo,const char* type, size_t* tamanho,const char** dados){
     //Polyana
-    //O objetivo dessa função é abrir o arquivo para ler e pegar os dados que nele contem.
+    //O objetivo dessa funÃ§Ã£o Ã© abrir o arquivo para ler e pegar os dados que nele contem.
     FILE* file = NULL;
     if(strcmp(type, "bin") == 0){
-        file = fopen(nomeArquivo, "rb"); // Abre o arquivo em modo binário de leitura
+        file = fopen(nomeArquivo, "rb"); // Abre o arquivo em modo binÃ¡rio de leitura
     }else{
         file = fopen(nomeArquivo, "r"); // Abre o arquivo em modo de  leitura de texto
     }
@@ -82,13 +83,13 @@ void lerArquivo(const char* nomeArquivo,const char* type, size_t* tamanho,const 
         fseek(file, 0, SEEK_END);
         // Determina o tamanho do arquivo
         *tamanho = ftell(file);
-        // Move o ponteiro de volta para o início do arquivo
+        // Move o ponteiro de volta para o inÃ­cio do arquivo
         fseek(file, 0, SEEK_SET);
 
-        // Aloca memória para armazenar o conteúdo do arquivo
+        // Aloca memÃ³ria para armazenar o conteÃºdo do arquivo
         buffer = (char*)malloc(*tamanho);
         if (buffer) {
-            // Lê o conteúdo do arquivo para o buffer
+            // LÃª o conteÃºdo do arquivo para o buffer
             fread(buffer, 1, *tamanho, file);
         }
         // Fecha o arquivo
@@ -103,7 +104,7 @@ void lerArquivo(const char* nomeArquivo,const char* type, size_t* tamanho,const 
 void createCSV (const char** dados){
     printf("create CSV\n\n");
     //Leticia 
-    //O objetivo dessa função é pegar os dados que chegarem pra ela via parâmetro e criar um CSV.
+    //O objetivo dessa funÃ§Ã£o Ã© pegar os dados que chegarem pra ela via parÃ¢metro e criar um CSV.
 }
 
 //Funcao para inserir uma nova lista
@@ -123,7 +124,7 @@ void createCSV (const char** dados){
     
 
 
-   //O objetivo dessa função é abrir o arquivo txt, pegar os dados dele e salvar em um arquivo .bin. Precisa se atentar ao formato do nome do arquivo txt. Se ele vier no formato dia_mes_ano.txt, faça uma rotina que verifica somente qual é o mes e qual é o ano para verificar se existe informações já salvas para esse mes. Se existir imprimir a mensagem "Já existem dados para esse mês. Deseja sobrescrever?\n" e chama a funcao validar_opcao(2) exatamente dessa forma.
+   //O objetivo dessa funÃ§Ã£o Ã© abrir o arquivo txt, pegar os dados dele e salvar em um arquivo .bin. Precisa se atentar ao formato do nome do arquivo txt. Se ele vier no formato dia_mes_ano.txt, faÃ§a uma rotina que verifica somente qual Ã© o mes e qual Ã© o ano para verificar se existe informaÃ§Ãµes jÃ¡ salvas para esse mes. Se existir imprimir a mensagem "JÃ¡ existem dados para esse mÃªs. Deseja sobrescrever?\n" e chama a funcao validar_opcao(2) exatamente dessa forma.
 
     // Apos finalizacao da insercao imprimir a mensagem "Dados {nome do arquivo} inseridos com sucesso no arquivo dados.bin"
     free(dados);
@@ -140,7 +141,7 @@ typedef struct {
     int valor;     // Um valor inteiro
 } Registro;
 
-// Fun��o para verificar se um registro pertence ao m�s e ano especificados
+// Função para verificar se um registro pertence ao mês e ano especificados
 int pertenceAoMesAno(Registro *registro, int mes, int ano) {
     struct tm tm;
     memset(&tm, 0, sizeof(struct tm));
@@ -161,7 +162,7 @@ void filtrarDados(int mes, int ano) {
     Registro registro;
     int registrosApagados = 0;
 
-    // L� registros de dados.bin e copia os que n�o pertencem ao m�s/ano para backup.bin
+    // Lê registros de dados.bin e copia os que não pertencem ao mês/ano para backup.bin
     while (fread(&registro, sizeof(Registro), 1, dados)) {
         if (!pertenceAoMesAno(&registro, mes, ano)) {
             fwrite(&registro, sizeof(Registro), 1, backup);
@@ -173,7 +174,7 @@ void filtrarDados(int mes, int ano) {
     fclose(dados);
     fclose(backup);
 
-    // Agora, retornamos os dados de backup.bin para dados.bin, exceto o m�s e ano especificados
+    // Agora, retornamos os dados de backup.bin para dados.bin, exceto o mês e ano especificados
     backup = fopen("backup.bin", "rb");
     dados = fopen("dados.bin", "wb");
     if (!dados || !backup) {
@@ -183,7 +184,7 @@ void filtrarDados(int mes, int ano) {
         exit(EXIT_FAILURE);
     }
 
-    // Copia os registros de backup.bin de volta para dados.bin, exceto os do m�s/ano especificados
+    // Copia os registros de backup.bin de volta para dados.bin, exceto os do mês/ano especificados
     while (fread(&registro, sizeof(Registro), 1, backup)) {
         if (!pertenceAoMesAno(&registro, mes, ano)) {
             fwrite(&registro, sizeof(Registro), 1, dados);
@@ -207,7 +208,7 @@ int main() {
 }
 
 
-    //O objetivo dessa função é pegar todos os dados do arquivo dados.bin, criar uma cópia chamada backup.bin e passar para ele todos os dados que NÃO estão contidos no mes informado. Ex: se foi informado 04/2024 então tudo o que não for de abril deve ser salvo no arquivo backup.bin. Após isso, ele deve excluir o arquivo dados.bin e criar um novo com os dados do arquivo backup.bin
+    //O objetivo dessa funÃ§Ã£o Ã© pegar todos os dados do arquivo dados.bin, criar uma cÃ³pia chamada backup.bin e passar para ele todos os dados que NÃƒO estÃ£o contidos no mes informado. Ex: se foi informado 04/2024 entÃ£o tudo o que nÃ£o for de abril deve ser salvo no arquivo backup.bin. ApÃ³s isso, ele deve excluir o arquivo dados.bin e criar um novo com os dados do arquivo backup.bin
 
     // ao final ele deve imprimir uma mensagem informando quantos registros foram apagados.
 
@@ -223,10 +224,10 @@ int main() {
 //     }
 //     return 0;
 
-//     //O objetivo dessa função é pegar os dados do arquivo dados.bin e somar tudo que foi arrecadado de oleo dentro de cada mes e chamar a funcao de criar csv enviando como parâmentro o mes e a soma. O nome desse arquivo deve ser somatorio
+//     //O objetivo dessa funÃ§Ã£o Ã© pegar os dados do arquivo dados.bin e somar tudo que foi arrecadado de oleo dentro de cada mes e chamar a funcao de criar csv enviando como parÃ¢mentro o mes e a soma. O nome desse arquivo deve ser somatorio
 //  }
 
-//Função para listar os dados na tela
+//FunÃ§Ã£o para listar os dados na tela
 void lotsList(){
     //Polyana
     // funcao para validar se o arquivo dados.bin existe.
@@ -235,7 +236,7 @@ void lotsList(){
     size_t tamanho = 0;
     const char* dados = NULL;
 
- //O objetivo dessa funcao e pegar os dados do arquivo dados.bin e listar na tela e depois chamar a funcao que ira criar um arquivo CSV com esses dados. Passe os dados do arquivo bin como parâmetro para a função que irá criar o CSV. O nome desse arquivo deve ser todos_registros
+ //O objetivo dessa funcao e pegar os dados do arquivo dados.bin e listar na tela e depois chamar a funcao que ira criar um arquivo CSV com esses dados. Passe os dados do arquivo bin como parÃ¢metro para a funÃ§Ã£o que irÃ¡ criar o CSV. O nome desse arquivo deve ser todos_registros
     lerArquivo(nomeArquivo ,type, &tamanho, &dados);
 
     if(dados == NULL || dados[0] == '\0'){
@@ -300,7 +301,7 @@ int main(int argc, char *argv[]) {
             return 0;
 
            default:
-            printf("Opcao inválida. Tente novamente!!!!\n\n");
+            printf("Opcao invÃ¡lida. Tente novamente!!!!\n\n");
             break;
         }        
     }
