@@ -134,66 +134,78 @@ void createCSV (const char** dados){
     
     
 //gabriel
-// Estrutura do registro, incluindo a data no formato MM/YYYY
+/ Definicao da estrutura do registro
 typedef struct {
-    char data[8]; // formato MM/YYYY
-    // outros campos do registro
-    char dados[256];
+    char data[11]; // Data no formato "YYYY-MM-DD"
+    int valor;     // Um valor inteiro
 } Registro;
 
-void filtrarMes(const char* mesAno) {
-    FILE *fpDados, *fpBackup;
-    Registro reg;
+// FunÁ„o para verificar se um registro pertence ao mÍs e ano especificados
+int pertenceAoMesAno(Registro *registro, int mes, int ano) {
+    struct tm tm;
+    memset(&tm, 0, sizeof(struct tm));
+    strptime(registro->data, "%Y-%m-%d", &tm);
+    return (tm.tm_mon + 1 == mes && tm.tm_year + 1900 == ano);
+}
+
+void filtrarDados(int mes, int ano) {
+    FILE *dados = fopen("dados.bin", "rb");
+    FILE *backup = fopen("backup.bin", "wb");
+    if (!dados || !backup) {
+        perror("Erro ao abrir os arquivos");
+        if (dados) fclose(dados);
+        if (backup) fclose(backup);
+        exit(EXIT_FAILURE);
+    }
+
+    Registro registro;
     int registrosApagados = 0;
 
-    // Abrir o arquivo original
-    fpDados = fopen("dados.bin", "rb");
-    if (fpDados == NULL) {
-        perror("Erro ao abrir dados.bin");
-        exit(EXIT_FAILURE);
-    }
-
-    // Criar o arquivo de backup
-    fpBackup = fopen("backup.bin", "wb");
-    if (fpBackup == NULL) {
-        perror("Erro ao criar backup.bin");
-        fclose(fpDados);
-        exit(EXIT_FAILURE);
-    }
-
-    // Ler e copiar registros, exceto os do mÍs informado
-    while (fread(&reg, sizeof(Registro), 1, fpDados)) {
-        if (strncmp(reg.data, mesAno, 7) != 0) { // Compara apenas MM/YYYY
-            fwrite(&reg, sizeof(Registro), 1, fpBackup);
+    // LÍ registros de dados.bin e copia os que n„o pertencem ao mÍs/ano para backup.bin
+    while (fread(&registro, sizeof(Registro), 1, dados)) {
+        if (!pertenceAoMesAno(&registro, mes, ano)) {
+            fwrite(&registro, sizeof(Registro), 1, backup);
         } else {
             registrosApagados++;
         }
     }
 
-    fclose(fpDados);
-    fclose(fpBackup);
+    fclose(dados);
+    fclose(backup);
 
-    // Excluir o arquivo original
-    if (remove("dados.bin") != 0) {
-        perror("Erro ao excluir dados.bin");
+    // Agora, retornamos os dados de backup.bin para dados.bin, exceto o mÍs e ano especificados
+    backup = fopen("backup.bin", "rb");
+    dados = fopen("dados.bin", "wb");
+    if (!dados || !backup) {
+        perror("Erro ao abrir os arquivos");
+        if (backup) fclose(backup);
+        if (dados) fclose(dados);
         exit(EXIT_FAILURE);
     }
 
-    // Renomear o arquivo de backup para o nome original
-    if (rename("backup.bin", "dados.bin") != 0) {
-        perror("Erro ao renomear backup.bin");
-        exit(EXIT_FAILURE);
+    // Copia os registros de backup.bin de volta para dados.bin, exceto os do mÍs/ano especificados
+    while (fread(&registro, sizeof(Registro), 1, backup)) {
+        if (!pertenceAoMesAno(&registro, mes, ano)) {
+            fwrite(&registro, sizeof(Registro), 1, dados);
+        }
     }
 
-    // Imprimir a quantidade de registros apagados
-    printf("Registros apagados: %d\n", registrosApagados);
+    fclose(dados);
+    fclose(backup);
+
+    printf("%d registros foram apagados.\n", registrosApagados);
 }
 
 int main() {
-    // Exemplo de uso da funÁ„o
-    filtrarMes("04/2024");
+    int mes, ano;
+    printf("Digite o mes e ano (MM YYYY): ");
+    scanf("%d %d", &mes, &ano);
+
+    filtrarDados(mes, ano);
+
     return 0;
 }
+
 
     //O objetivo dessa fun√ß√£o √© pegar todos os dados do arquivo dados.bin, criar uma c√≥pia chamada backup.bin e passar para ele todos os dados que N√ÉO est√£o contidos no mes informado. Ex: se foi informado 04/2024 ent√£o tudo o que n√£o for de abril deve ser salvo no arquivo backup.bin. Ap√≥s isso, ele deve excluir o arquivo dados.bin e criar um novo com os dados do arquivo backup.bin
 
