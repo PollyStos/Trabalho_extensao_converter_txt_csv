@@ -1,0 +1,58 @@
+#include <stdio.h>
+#include <stdlib.h>
+
+typedef struct livro {
+  char titulo[50];
+  int qtde;
+  float preco;
+} Livro;
+
+int main(void) {
+  FILE *fp;
+  int posicao;
+  Livro l;
+
+  printf("Digite o titulo, quantidade e preco do livro:\n");
+  // Limita a leitura do título para evitar estouro de buffer
+  scanf("%49[^\n]", l.titulo);
+  while (getchar() != '\n'); // Limpa o buffer de entrada
+  scanf("%d", &l.qtde);
+  scanf("%f", &l.preco);
+
+  // Abre o arquivo em modo de adição binária
+  fp = fopen("teste.bin", "ab");
+  if (fp == NULL) {
+    perror("Erro ao abrir o arquivo");
+    return 1;
+  }
+  fwrite(&l, sizeof(Livro), 1, fp);
+  fclose(fp);
+
+  // Reabre o arquivo em modo de leitura binária
+  fp = fopen("teste.bin", "rb");
+  if (fp == NULL) {
+    perror("Erro ao abrir o arquivo");
+    return 1;
+  }
+  while (fread(&l, sizeof(Livro), 1, fp))
+    printf("%s %d %f\n", l.titulo, l.qtde, l.preco);
+  fclose(fp);
+
+  // Solicita ao usuário a posição do cadastro que deseja consultar
+  printf("\n\nDigite qual cadastro voce deseja consultar\n");
+  printf("Considere que 0 é o primeiro: ");
+  scanf("%d", &posicao);
+
+  // Reabre o arquivo em modo de leitura binária e vai para a posição desejada
+  fp = fopen("teste.bin", "rb");
+  if (fp == NULL) {
+    perror("Erro ao abrir o arquivo");
+    return 1;
+  }
+  fseek(fp, posicao * sizeof(Livro), SEEK_SET);
+  fread(&l, sizeof(Livro), 1, fp);
+  printf("%s %d %f\n", l.titulo, l.qtde, l.preco);
+
+  fclose(fp);
+  return 0;
+}

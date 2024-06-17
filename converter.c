@@ -1,5 +1,7 @@
 #include <stdio.h>
 #include <string.h>
+#include <stdlib.h>
+
 
 
 /*
@@ -129,7 +131,70 @@ void createCSV (const char** dados){
 
  void lotsDelete (){
     printf("Digite a data que deseja excluir 'mm/aaaa':\n\n");
+    
+    
 //gabriel
+// Estrutura do registro, incluindo a data no formato MM/YYYY
+typedef struct {
+    char data[8]; // formato MM/YYYY
+    // outros campos do registro
+    char dados[256];
+} Registro;
+
+void filtrarMes(const char* mesAno) {
+    FILE *fpDados, *fpBackup;
+    Registro reg;
+    int registrosApagados = 0;
+
+    // Abrir o arquivo original
+    fpDados = fopen("dados.bin", "rb");
+    if (fpDados == NULL) {
+        perror("Erro ao abrir dados.bin");
+        exit(EXIT_FAILURE);
+    }
+
+    // Criar o arquivo de backup
+    fpBackup = fopen("backup.bin", "wb");
+    if (fpBackup == NULL) {
+        perror("Erro ao criar backup.bin");
+        fclose(fpDados);
+        exit(EXIT_FAILURE);
+    }
+
+    // Ler e copiar registros, exceto os do m�s informado
+    while (fread(&reg, sizeof(Registro), 1, fpDados)) {
+        if (strncmp(reg.data, mesAno, 7) != 0) { // Compara apenas MM/YYYY
+            fwrite(&reg, sizeof(Registro), 1, fpBackup);
+        } else {
+            registrosApagados++;
+        }
+    }
+
+    fclose(fpDados);
+    fclose(fpBackup);
+
+    // Excluir o arquivo original
+    if (remove("dados.bin") != 0) {
+        perror("Erro ao excluir dados.bin");
+        exit(EXIT_FAILURE);
+    }
+
+    // Renomear o arquivo de backup para o nome original
+    if (rename("backup.bin", "dados.bin") != 0) {
+        perror("Erro ao renomear backup.bin");
+        exit(EXIT_FAILURE);
+    }
+
+    // Imprimir a quantidade de registros apagados
+    printf("Registros apagados: %d\n", registrosApagados);
+}
+
+int main() {
+    // Exemplo de uso da fun��o
+    filtrarMes("04/2024");
+    return 0;
+}
+
     //O objetivo dessa função é pegar todos os dados do arquivo dados.bin, criar uma cópia chamada backup.bin e passar para ele todos os dados que NÃO estão contidos no mes informado. Ex: se foi informado 04/2024 então tudo o que não for de abril deve ser salvo no arquivo backup.bin. Após isso, ele deve excluir o arquivo dados.bin e criar um novo com os dados do arquivo backup.bin
 
     // ao final ele deve imprimir uma mensagem informando quantos registros foram apagados.
