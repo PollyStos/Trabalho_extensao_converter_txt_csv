@@ -160,13 +160,9 @@ void lerArquivo (const char* nomeArquivo, const char* type, size_t* tamanho, con
  }
 
 
- void lotsDelete (){
-//gabriel
-    printf("Digite a data que deseja excluir 'mm/aaaa':\n\n");
-      getchar();
-    
-//  Definicao da estrutura do registro
 
+//gabriel
+    
 int pertenceAoMesAno(Registro *registro, int mes, int ano) {
     struct tm tm;
     memset(&tm, 0, sizeof(struct tm));
