@@ -22,6 +22,11 @@ Exemplo de dados para o arquivo .txt
 15/01/2024 1.5
 */
 
+typedef struct {
+    char date[11]; // "dd/mm/yyyy"
+    float value;
+} Registro;
+
 
 void clear(){
     #ifdef __linux__
@@ -31,7 +36,7 @@ void clear(){
     #endif    
 }
 
-// FunÃ§Ã£o para validar se a entrada Ã© um nÃºmero entre 1 e 5
+// // FunÃ§Ã£o para validar se a entrada Ã© um nÃºmero entre 1 e 5
 int validarOpcao(int num) {
     char input[100];
     int numero;
@@ -68,12 +73,12 @@ int validarOpcao(int num) {
     }
 }
 
-void lerArquivo(const char* nomeArquivo,const char* type, size_t* tamanho,const char** dados){
+void lerArquivo (const char* nomeArquivo, const char* type, size_t* tamanho, const char** dados){
     //Polyana
-    //O objetivo dessa funÃ§Ã£o Ã© abrir o arquivo para ler e pegar os dados que nele contem.
+    //O objetivo dessa funcao e abrir o arquivo para ler e pegar os dados que nele contem.
     FILE* file = NULL;
     if(strcmp(type, "bin") == 0){
-        file = fopen(nomeArquivo, "rb"); // Abre o arquivo em modo binÃ¡rio de leitura
+        file = fopen(nomeArquivo, "rb"); // Abre o arquivo em modo binario de leitura
     }else{
         file = fopen(nomeArquivo, "r"); // Abre o arquivo em modo de  leitura de texto
     }
@@ -89,7 +94,7 @@ void lerArquivo(const char* nomeArquivo,const char* type, size_t* tamanho,const 
         // Aloca memÃ³ria para armazenar o conteÃºdo do arquivo
         buffer = (char*)malloc(*tamanho);
         if (buffer) {
-            // LÃª o conteÃºdo do arquivo para o buffer
+            // Le o conteudo do arquivo para o buffer
             fread(buffer, 1, *tamanho, file);
         }
         // Fecha o arquivo
@@ -101,11 +106,26 @@ void lerArquivo(const char* nomeArquivo,const char* type, size_t* tamanho,const 
     return;
 }
 
-void createCSV (const char** dados){
-    printf("create CSV\n\n");
-    //Leticia 
-    //O objetivo dessa funÃ§Ã£o Ã© pegar os dados que chegarem pra ela via parÃ¢metro e criar um CSV.
-}
+
+// void saveDataToBin(const char* filename, DataEntry* entries, size_t numEntries) {
+//     FILE* file = fopen(filename, "wb");
+//     if (file == NULL) {
+//         perror("Erro ao abrir o arquivo para escrita");
+//         return;
+//     }
+
+//     for (size_t i = 0; i < numEntries; i++) {
+//         fwrite(&entries[i], sizeof(DataEntry), 1, file);
+//     }
+
+//     fclose(file);
+// }
+
+// void createCSV (const char** dados){
+//     printf("create CSV\n\n");
+//     //Leticia 
+//     //O objetivo dessa funÃ§Ã£o Ã© pegar os dados que chegarem pra ela via parÃ¢metro e criar um CSV.
+// }
 
 //Funcao para inserir uma nova lista
  void lotsInsert (){ 
@@ -114,34 +134,39 @@ void createCSV (const char** dados){
     size_t tamanho = 0;
     const char* dados = NULL;
 
-    printf("Coloque o nome do seu arquivo que deseja abrir:");
+
+    // char dadosBinarios = NULL;
+
+    printf("Coloque o nome do seu arquivo que deseja abrir:\n");
     fgets(NomeArq, sizeof(NomeArq), stdin);
     NomeArq[strcspn(NomeArq, "\n")] = '\0';
-    printf(NomeArq);
-
     lerArquivo(NomeArq ,type, &tamanho, &dados);
-    printf(dados);
+
+    // saveDataToBin("dados.bin", entries, numEntries);
+
+    printf("Dados salvos em 'dados.bin'.\n");
+
+    printf("Pressione Enter para continuar...");
+    getchar();
+    
+
     
 
 
-   //O objetivo dessa funÃ§Ã£o Ã© abrir o arquivo txt, pegar os dados dele e salvar em um arquivo .bin. Precisa se atentar ao formato do nome do arquivo txt. Se ele vier no formato dia_mes_ano.txt, faÃ§a uma rotina que verifica somente qual Ã© o mes e qual Ã© o ano para verificar se existe informaÃ§Ãµes jÃ¡ salvas para esse mes. Se existir imprimir a mensagem "JÃ¡ existem dados para esse mÃªs. Deseja sobrescrever?\n" e chama a funcao validar_opcao(2) exatamente dessa forma.
+//    //O objetivo dessa funcao e abrir o arquivo txt, pegar os dados dele e salvar em um arquivo .bin. Precisa se atentar ao formato do nome do arquivo txt. Se ele vier no formato dia_mes_ano.txt, faca uma rotina que verifica somente qual e o mes e qual e o ano para verificar se existe informacoes ja salvas para esse mes. Se existir imprimir a mensagem "Ja existem dados para esse mes. Deseja sobrescrever?\n" e chama a funcao validar_opcao(2) exatamente dessa forma.
 
-    // Apos finalizacao da insercao imprimir a mensagem "Dados {nome do arquivo} inseridos com sucesso no arquivo dados.bin"
-    free(dados);
+//     // Apos finalizacao da insercao imprimir a mensagem "Dados {nome do arquivo} inseridos com sucesso no arquivo dados.bin"
+//     free(dados);
  }
 
- void lotsDelete (){
-    printf("Digite a data que deseja excluir 'mm/aaaa':\n\n");
-    
-    
-//gabriel
-/ Definicao da estrutura do registro
-typedef struct {
-    char data[11]; // Data no formato "YYYY-MM-DD"
-    int valor;     // Um valor inteiro
-} Registro;
 
-// Função para verificar se um registro pertence ao mês e ano especificados
+ void lotsDelete (){
+//gabriel
+    printf("Digite a data que deseja excluir 'mm/aaaa':\n\n");
+      getchar();
+    
+//  Definicao da estrutura do registro
+
 int pertenceAoMesAno(Registro *registro, int mes, int ano) {
     struct tm tm;
     memset(&tm, 0, sizeof(struct tm));
@@ -149,70 +174,63 @@ int pertenceAoMesAno(Registro *registro, int mes, int ano) {
     return (tm.tm_mon + 1 == mes && tm.tm_year + 1900 == ano);
 }
 
-void filtrarDados(int mes, int ano) {
-    FILE *dados = fopen("dados.bin", "rb");
-    FILE *backup = fopen("backup.bin", "wb");
-    if (!dados || !backup) {
-        perror("Erro ao abrir os arquivos");
-        if (dados) fclose(dados);
-        if (backup) fclose(backup);
-        exit(EXIT_FAILURE);
-    }
+// // Função para verificar se um registro pertence ao mês e ano especificados
 
-    Registro registro;
-    int registrosApagados = 0;
+// void filtrarDados(int mes, int ano) {
+//     FILE *dados = fopen("dados.bin", "rb");
+//     FILE *backup = fopen("backup.bin", "wb");
+//     if (!dados || !backup) {
+//         perror("Erro ao abrir os arquivos");
+//         if (dados) fclose(dados);
+//         if (backup) fclose(backup);
+//         exit(EXIT_FAILURE);
+//     }
 
-    // Lê registros de dados.bin e copia os que não pertencem ao mês/ano para backup.bin
-    while (fread(&registro, sizeof(Registro), 1, dados)) {
-        if (!pertenceAoMesAno(&registro, mes, ano)) {
-            fwrite(&registro, sizeof(Registro), 1, backup);
-        } else {
-            registrosApagados++;
-        }
-    }
+//     Registro registro;
+//     int registrosApagados = 0;
 
-    fclose(dados);
-    fclose(backup);
+//     // Lê registros de dados.bin e copia os que não pertencem ao mês/ano para backup.bin
+//     while (fread(&registro, sizeof(Registro), 1, dados)) {
+//         if (!pertenceAoMesAno(&registro, mes, ano)) {
+//             fwrite(&registro, sizeof(Registro), 1, backup);
+//         } else {
+//             registrosApagados++;
+//         }
+//     }
 
-    // Agora, retornamos os dados de backup.bin para dados.bin, exceto o mês e ano especificados
-    backup = fopen("backup.bin", "rb");
-    dados = fopen("dados.bin", "wb");
-    if (!dados || !backup) {
-        perror("Erro ao abrir os arquivos");
-        if (backup) fclose(backup);
-        if (dados) fclose(dados);
-        exit(EXIT_FAILURE);
-    }
+//     fclose(dados);
+//     fclose(backup);
 
-    // Copia os registros de backup.bin de volta para dados.bin, exceto os do mês/ano especificados
-    while (fread(&registro, sizeof(Registro), 1, backup)) {
-        if (!pertenceAoMesAno(&registro, mes, ano)) {
-            fwrite(&registro, sizeof(Registro), 1, dados);
-        }
-    }
+//     // Agora, retornamos os dados de backup.bin para dados.bin, exceto o mês e ano especificados
+//     backup = fopen("backup.bin", "rb");
+//     dados = fopen("dados.bin", "wb");
+//     if (!dados || !backup) {
+//         perror("Erro ao abrir os arquivos");
+//         if (backup) fclose(backup);
+//         if (dados) fclose(dados);
+//         exit(EXIT_FAILURE);
+//     }
 
-    fclose(dados);
-    fclose(backup);
+//     // Copia os registros de backup.bin de volta para dados.bin, exceto os do mês/ano especificados
+//     while (fread(&registro, sizeof(Registro), 1, backup)) {
+//         if (!pertenceAoMesAno(&registro, mes, ano)) {
+//             fwrite(&registro, sizeof(Registro), 1, dados);
+//         }
+//     }
 
-    printf("%d registros foram apagados.\n", registrosApagados);
+//     fclose(dados);
+//     fclose(backup);
+
+//     printf("%d registros foram apagados.\n", registrosApagados);
 }
 
-int main() {
-    int mes, ano;
-    printf("Digite o mes e ano (MM YYYY): ");
-    scanf("%d %d", &mes, &ano);
-
-    filtrarDados(mes, ano);
-
-    return 0;
-}
 
 
     //O objetivo dessa funÃ§Ã£o Ã© pegar todos os dados do arquivo dados.bin, criar uma cÃ³pia chamada backup.bin e passar para ele todos os dados que NÃƒO estÃ£o contidos no mes informado. Ex: se foi informado 04/2024 entÃ£o tudo o que nÃ£o for de abril deve ser salvo no arquivo backup.bin. ApÃ³s isso, ele deve excluir o arquivo dados.bin e criar um novo com os dados do arquivo backup.bin
 
     // ao final ele deve imprimir uma mensagem informando quantos registros foram apagados.
 
- }
+//  }
  
 //  void lotsSum(){
 //     // funcao para validar se o arquivo dados.bin existe.
@@ -227,7 +245,7 @@ int main() {
 //     //O objetivo dessa funÃ§Ã£o Ã© pegar os dados do arquivo dados.bin e somar tudo que foi arrecadado de oleo dentro de cada mes e chamar a funcao de criar csv enviando como parÃ¢mentro o mes e a soma. O nome desse arquivo deve ser somatorio
 //  }
 
-//FunÃ§Ã£o para listar os dados na tela
+// //FunÃ§Ã£o para listar os dados na tela
 void lotsList(){
     //Polyana
     // funcao para validar se o arquivo dados.bin existe.
@@ -236,17 +254,18 @@ void lotsList(){
     size_t tamanho = 0;
     const char* dados = NULL;
 
- //O objetivo dessa funcao e pegar os dados do arquivo dados.bin e listar na tela e depois chamar a funcao que ira criar um arquivo CSV com esses dados. Passe os dados do arquivo bin como parÃ¢metro para a funÃ§Ã£o que irÃ¡ criar o CSV. O nome desse arquivo deve ser todos_registros
+     //O objetivo dessa funcao e pegar os dados do arquivo dados.bin e listar na tela e depois chamar a funcao que ira criar um arquivo CSV com esses dados. Passe os dados do arquivo bin como parÃ¢metro para a funÃ§Ã£o que irÃ¡ criar o CSV. O nome desse arquivo deve ser todos_registros
     lerArquivo(nomeArquivo ,type, &tamanho, &dados);
 
     if(dados == NULL || dados[0] == '\0'){
         printf("Alimente o Banco de Dados antes utilizando a opcao 1 do menu\n\n");
     }else{
-    printf("Conteudo:\n%s\n", dados);
+        printf("Conteudo:\n%s\n", dados);
     }
-
-    createCSV(&dados);
-// no final imprimir uma mensagem contendo a quantidade de registros que foram criados
+    printf("Pressione Enter para continuar...");
+    getchar();
+    // createCSV(&dados);
+    // no final imprimir uma mensagem contendo a quantidade de registros que foram criados
     free(dados);
     return;
 }
@@ -263,7 +282,7 @@ int main(int argc, char *argv[]) {
      int opcao=-1;
      while (opcao!=5){    
        do{    
-            // clear();
+            clear();
             printf("****************************\n");
             printf(" 1 - Inserir lote           \n");
             printf(" 2 - Eliminar lote          \n");
