@@ -174,54 +174,45 @@ int pertenceAoMesAno(Registro *registro, int mes, int ano) {
     return (tm.tm_mon + 1 == mes && tm.tm_year + 1900 == ano);
 }
 
-// // Função para verificar se um registro pertence ao mês e ano especificados
+void lotsDelete() {
+    printf("Digite a data que deseja excluir 'mm/aaaa': ");
+    char input[10];
+    fgets(input, sizeof(input), stdin);
+    input[strcspn(input, "\n")] = '\0';
 
-// void filtrarDados(int mes, int ano) {
-//     FILE *dados = fopen("dados.bin", "rb");
-//     FILE *backup = fopen("backup.bin", "wb");
-//     if (!dados || !backup) {
-//         perror("Erro ao abrir os arquivos");
-//         if (dados) fclose(dados);
-//         if (backup) fclose(backup);
-//         exit(EXIT_FAILURE);
-//     }
+    int mes, ano;
+    sscanf(input, "%d/%d", &mes, &ano);
 
-//     Registro registro;
-//     int registrosApagados = 0;
+    FILE* dados = fopen("dados.bin", "rb");
+    FILE* backup = fopen("backup.bin", "wb");
+    if (!dados || !backup) {
+        perror("Erro ao abrir os arquivos");
+        if (dados) fclose(dados);
+        if (backup) fclose(backup);
+        return;
+    }
 
-//     // Lê registros de dados.bin e copia os que não pertencem ao mês/ano para backup.bin
-//     while (fread(&registro, sizeof(Registro), 1, dados)) {
-//         if (!pertenceAoMesAno(&registro, mes, ano)) {
-//             fwrite(&registro, sizeof(Registro), 1, backup);
-//         } else {
-//             registrosApagados++;
-//         }
-//     }
+    Registro registro;
+    int registrosApagados = 0;
 
-//     fclose(dados);
-//     fclose(backup);
+    while (fread(&registro, sizeof(Registro), 1, dados)) {
+        struct tm tm;
+        memset(&tm, 0, sizeof(struct tm));
+        strptime(registro.date, "%d/%m/%Y", &tm);
+        if (tm.tm_mon + 1 != mes || tm.tm_year + 1900 != ano) {
+            fwrite(&registro, sizeof(Registro), 1, backup);
+        } else {
+            registrosApagados++;
+        }
+    }
 
-//     // Agora, retornamos os dados de backup.bin para dados.bin, exceto o mês e ano especificados
-//     backup = fopen("backup.bin", "rb");
-//     dados = fopen("dados.bin", "wb");
-//     if (!dados || !backup) {
-//         perror("Erro ao abrir os arquivos");
-//         if (backup) fclose(backup);
-//         if (dados) fclose(dados);
-//         exit(EXIT_FAILURE);
-//     }
+    fclose(dados);
+    fclose(backup);
 
-//     // Copia os registros de backup.bin de volta para dados.bin, exceto os do mês/ano especificados
-//     while (fread(&registro, sizeof(Registro), 1, backup)) {
-//         if (!pertenceAoMesAno(&registro, mes, ano)) {
-//             fwrite(&registro, sizeof(Registro), 1, dados);
-//         }
-//     }
+    remove("dados.bin");
+    rename("backup.bin", "dados.bin");
 
-//     fclose(dados);
-//     fclose(backup);
-
-//     printf("%d registros foram apagados.\n", registrosApagados);
+    printf("%d registros foram apagados.\n", registrosApagados);
 }
 
 
