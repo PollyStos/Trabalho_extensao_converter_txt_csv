@@ -74,7 +74,7 @@ int validarOpcao(int num) {
     }
 }
 
-void lerArquivo(const char* nomeArquivo, const char* type, size_t* tamanho, char* dados) {
+void lerArquivo(const char* nomeArquivo, const char* type, size_t* tamanho, char** dados) {
     //Polyana
     //O objetivo dessa funcao e abrir o arquivo para ler e pegar os dados que nele contem.
     FILE* file = NULL;
