@@ -28,6 +28,12 @@ typedef struct {
     float value;
 } Registro;
 
+typedef struct {
+    char mes[3];
+    char ano[5];
+    float valor;
+} Soma;
+
 
 void clear(){
     #ifdef __linux__
@@ -92,12 +98,15 @@ void lerArquivo(const char* nomeArquivo, const char* type, size_t* tamanho, char
         // Move o ponteiro de volta para o inÃ­cio do arquivo
         fseek(file, 0, SEEK_SET);
 
-        // Aloca memÃ³ria para armazenar o conteÃºdo do arquivo
+        if (*tamanho > 0) {
+            (*tamanho)--;
+        }
+
+        // Aloca memoria para armazenar o conteudo do arquivo
         *dados = (char*)malloc(*tamanho + 1);
         if (*dados) {
             // Le o conteudo do arquivo para o buffer
             fread(*dados, 1, *tamanho, file);
-            (*dados)[*tamanho] = '\0';
         } else {
             perror("Erro ao alocar memoria");
         }
@@ -108,24 +117,44 @@ void lerArquivo(const char* nomeArquivo, const char* type, size_t* tamanho, char
     }
 }
 
-bool checkMonthExists(const char* monthYear, FILE* binFile) {
-    Registro entry;
-    while (fread(&entry, sizeof(Registro), 1, binFile)) {
-        if (strncmp(entry.date + 3, monthYear, 7) == 0) {
+bool checkMonthExists(const char* monthYear) {
+    
+    size_t tam = 0;
+    char* tempDados = NULL;
+    lerArquivo("dados.bin", "bin", &tam, &tempDados);
+
+    const char*ptr = tempDados;
+
+    while ((ptr = strchr(ptr, '\n')) != NULL) {
+        ptr++;
+        if (strncmp(ptr + 3, monthYear, 7) == 0) { // Comparando os primeiros 7 caracteres
             return true;
         }
     }
+    
     return false;
+
+    
 }
 
 void saveDataToBin(const char* filename, const Registro* entries, size_t numEntries) {
-    FILE* file = fopen(filename, "ab");
+    FILE* file;
+    
+    if(strcmp(filename, "backup.bin") == 0){
+        file = fopen(filename, "wb");
+    } else {
+        file = fopen(filename, "ab");
+    }
+
+
     if (file == NULL) {
         perror("Erro ao abrir o arquivo binário para escrita");
         return;
     }
-
-    fwrite(entries, sizeof(Registro), numEntries, file);
+    
+     for (size_t i = 0; i < numEntries; i++) {
+        fprintf(file, "%s %.1f\n", entries[i].date, entries[i].value);
+    }
     fclose(file);
 }
 
@@ -150,6 +179,7 @@ Registro* parseDataEntries( char* dados, size_t* numEntries) {
     }
 
     ptr = dados;
+
     for (size_t i = 0; i < *numEntries; i++) {
         sscanf(ptr, "%10s %f", entries[i].date, &entries[i].value);
         ptr = strchr(ptr, '\n');
@@ -193,18 +223,25 @@ void createCSV( char* dados, const char* nomeArquivo) {
     
     lerArquivo(NomeArq, type, &tamanho, &dados);
 
-    
     if(dados != NULL){
          // Extrair mês e ano do nome do arquivo
         char monthYear[8]; // "mm/yyyy"
         strncpy(monthYear, NomeArq + 3, 7);
         monthYear[7] = '\0';
+     
+        char *ptr = monthYear;
+        while (*ptr) {
+            if (*ptr == '-') {
+                *ptr = '/';
+            }
+            ptr++;
+        }
 
         bool monthExists = false;
-        
+
         FILE* binFile = fopen("dados.bin", "rb");
         if (binFile != NULL) {
-            monthExists = checkMonthExists(monthYear, binFile);
+            monthExists = checkMonthExists(monthYear);
             fclose(binFile);
         }
 
@@ -214,7 +251,10 @@ void createCSV( char* dados, const char* nomeArquivo) {
             if (opcao == 0) {
                 free(dados);
                 return;
+            }else{
+                lotsDelete();
             }
+            
         } 
         
         size_t numEntries = 0;
@@ -243,81 +283,178 @@ void lotsDelete(){
      //O objetivo dessa funÃ§Ã£o Ã© pegar todos os dados do arquivo dados.bin, criar uma cÃ³pia chamada backup.bin e passar para ele todos os dados que NÃƒO estÃ£o contidos no mes informado. Ex: se foi informado 04/2024 entÃ£o tudo o que nÃ£o for de abril deve ser salvo no arquivo backup.bin. ApÃ³s isso, ele deve excluir o arquivo dados.bin e criar um novo com os dados do arquivo backup.bin
 
     printf("Digite a data que deseja excluir 'mm/aaaa': ");
-    char input[10];
-    fgets(input, sizeof(input), stdin);
-    input[strcspn(input, "\n")] = '\0';
+    char monthYear[9];
 
-    int mes, ano;
-    sscanf(input, "%d/%d", &mes, &ano);
+    fgets(monthYear, sizeof(monthYear), stdin);
+    monthYear[strcspn(monthYear, "\n")] = '\0';
 
-    FILE* dados = fopen("dados.bin", "rb");
-    FILE* backup = fopen("backup.bin", "wb");
-    if (!dados || !backup) {
-        perror("Erro ao abrir os arquivos");
-        if (dados) fclose(dados);
-        if (backup) fclose(backup);
-        return;
+    char *ptrData = monthYear;
+        while (*ptrData) {
+            if (*ptrData == '-') {
+                *ptrData = '/';
+            }
+            ptrData++;
+        }
+
+    size_t tamanho = 0;
+    char* dadosBin = NULL;
+    size_t numEntriesBin = 0;
+
+    lerArquivo("dados.bin", "bin", &tamanho, &dadosBin);
+
+    Registro* entriesBin = parseDataEntries(dadosBin, &numEntriesBin);
+
+    if (entriesBin != NULL) {
+        saveDataToBin("backup.bin", entriesBin, numEntriesBin);
+        printf("Backup realizado com sucesso.\n");
+        free(entriesBin);
+    } else {
+        printf("Erro ao realizar o backup.\n");
     }
 
-    Registro registro;
-    int registrosApagados = 0;
+    const char*ptr = dadosBin;
+    size_t index = 0;
+    size_t regDeletado = 0;
+    // char* novosDadosBin = NULL;
 
-    while (fread(&registro, sizeof(Registro), 1, dados)) {
-        int regMes, regAno;
-        sscanf(registro.date + 3, "%d/%d", &regMes, &regAno);
-        if (regMes != mes || regAno != ano) {
-            fwrite(&registro, sizeof(Registro), 1, backup);
-        } else {
-            registrosApagados++;
+    Registro* temp = (Registro*)malloc((tamanho / sizeof(Registro)) * sizeof(Registro));
+    if (temp == NULL) {
+        perror("Erro ao alocar memória");
+        exit(EXIT_FAILURE);
+    }
+
+    while ((ptr = strchr(ptr, '\n')) != NULL) {
+        ptr++;
+        if (strncmp(ptr + 3, monthYear, 7) != 0) { // Comparando os primeiros 7 caracteres
+            sscanf(ptr, "%10s %f", temp[index].date, &temp[index].value);
+            index++;
+        }else{
+            regDeletado++;
         }
     }
 
-    fclose(dados);
-    fclose(backup);
+    FILE* file = fopen("dados.bin", "wb");
+   
+    if (file == NULL) {
+        perror("Erro ao abrir o arquivo binário para escrita");
+        return;
+    }
+    
+     for (size_t i = 0; i < index; i++) {
+        fprintf(file, "%s %.1f\n", temp[i].date, temp[i].value);
+    }
+    fclose(file);
 
-    remove("dados.bin");
-    rename("backup.bin", "dados.bin");
+    free(dadosBin);
+    free(temp);
+
 
     // ao final ele deve imprimir uma mensagem informando quantos registros foram apagados.
-    printf("%d registros foram apagados.\n", registrosApagados);
+    printf("%d registros foram apagados.\n", regDeletado);
 
+    printf("Pressione Enter para continuar...");
+    getchar();
+
+}
+
+char* formatarDadosSoma(Soma* somaMes, int numEntries) {
+    // Tamanho total estimado para dadosSoma
+    // Considerando 15 caracteres para cada entrada (3 + 5 + 6 + 1 para o espaço e 1 para a nova linha)
+    int tamanhoTotal = numEntries * 15 + 1;  // +1 para o terminador nulo '\0'
+    char* dadosSoma = (char*)malloc(tamanhoTotal * sizeof(char));
+
+    if (dadosSoma == NULL) {
+        perror("Erro ao alocar memória para dadosSoma");
+        return NULL;
+    }
+
+    dadosSoma[0] = '\0';  // Inicializa a string vazia
+
+    // Itera sobre todas as entradas de somaMes e formata como linhas de dados
+    for (int i = 0; i < numEntries; i++) {
+        char linha[15];  // Tamanho estimado para cada linha
+        snprintf(linha, sizeof(linha), "%s/%s %.2f\n", somaMes[i].mes, somaMes[i].ano, somaMes[i].valor);
+        strcat(dadosSoma, linha);
+    }
+
+    return dadosSoma;
 }
  
  void lotsSum(){
-    //O objetivo dessa funÃ§Ã£o Ã© pegar os dados do arquivo dados.bin e somar tudo que foi arrecadado de oleo dentro de cada mes e chamar a funcao de criar csv enviando como parÃ¢mentro o mes e a soma. O nome desse arquivo deve ser somatorio
+    //O objetivo dessa funcao e pegar os dados do arquivo dados.bin e somar tudo que foi arrecadado de oleo dentro de cada mes e chamar a funcao de criar csv enviando como parÃ¢mentro o mes e a soma. O nome desse arquivo deve ser somatorio
 
-    FILE* dados = fopen("dados.bin", "rb");
+    const char* nomeArquivo = "dados.bin";
+    const char* type = "bin";
+    size_t tamanho = 0;
+    char* dados = NULL;
+    
+
+    lerArquivo(nomeArquivo ,type, &tamanho, &dados);
+
     if (!dados) {
         printf("Alimente o Banco de Dados antes utilizando a opção 1 do menu.\n\n");
+        free(dados);
         return;
     }
 
-    Registro registro;
-    float somaMensal[12] = {0};
-    int quantidadeRegistros[12] = {0};
+    const char*ptr = dados;
+    char month[3]; 
+    char year[5]; 
+     char tempMonth[3] = "";
+    char tempYear[5] = "";
+    float value = 0;
+    float soma = 0;
+    int index = -1;
 
-    while (fread(&registro, sizeof(Registro), 1, dados)) {
-        struct tm tm;
-        memset(&tm, 0, sizeof(struct tm));
-       sscanf(registro.date, "%d/%d/%d", &tm.tm_mday, &tm.tm_mon, &tm.tm_year);
-        tm.tm_mon--; // Corrigindo o valor do mês para zero-based (0-11)
+    Soma somaMes[12];
 
-        somaMensal[tm.tm_mon] += registro.value;
-        quantidadeRegistros[tm.tm_mon]++;
+    while ((ptr = strchr(ptr, '\n'))!= NULL) {
+        ptr++;
+        strncpy(month, ptr + 3, 2);
+        month[2] = '\0'; 
+
+        strncpy(year, ptr + 6, 4);
+        year[4] = '\0'; 
+
+        char *ptrValue = strstr(ptr, " ");
+        if (ptr != NULL) {
+            ptr++;
+            sscanf(ptrValue, "%f", &value);
+        } 
+        soma += value;
+
+        if(strcmp(tempMonth, month) == 0){
+            if(strcmp(tempYear, year) == 0){
+                somaMes[index].valor = soma;
+            }else{
+                soma = value;
+                index++;
+                strcpy(tempMonth, month);
+                strcpy(tempYear, year);
+                strcpy(somaMes[index].mes, month);
+                strcpy(somaMes[index].ano, year);
+                somaMes[index].valor = soma;
+                }
+
+        }else{
+            soma = value;
+            index++;
+            strcpy(tempMonth, month);
+            strcpy(tempYear, year);
+            strcpy(somaMes[index].mes, month);
+            strcpy(somaMes[index].ano, year);
+            somaMes[index].valor = soma;
+        } 
     }
+    char* dadosSoma = formatarDadosSoma(somaMes, index + 1);
 
-    fclose(dados);
+    free(dados);
+    createCSV(dadosSoma, "somatorio.csv");
 
-    char buffer[1024];
-    int offset = 0;
-    for (int i = 0; i < 12; i++) {
-        if (quantidadeRegistros[i] > 0) {
-            offset += sprintf(buffer + offset, "Mês %02d: %.2f\n", i + 1, somaMensal[i]);
-        }
-    }
+    printf("Somatorio mensal criado com sucesso no arquivo 'somatorio.csv'.\n");
+    printf("Pressione Enter para continuar...");
+    getchar();
 
-    createCSV(buffer, "somatorio.csv");
-    printf("Somatório mensal criado com sucesso no arquivo 'somatorio.csv'.\n");
  }
 
 // //Funcaoo para listar os dados na tela
